@@ -1,24 +1,29 @@
-import type { NextPage } from 'next';
+import type { InferGetStaticPropsType, NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../styles/Home.module.css';
-import Button from '@mui/material/Button';
 
+import { CountriesDocument, Country } from '../__generated__/graphql';
+import { Card, CardContent, Grid, Typography } from '@mui/material';
+import { initializeApollo } from '../modules/WithApollo';
 
-import { gql } from '@apollo/client';
-import { client } from '../apollo/client';
+type Props = InferGetStaticPropsType<typeof getStaticProps>;
 
-
-const Home: NextPage = ({ countries }) => {
-  console.log(countries);
-  const lst = countries.map(v => {
+const Home: NextPage<Props> = ({ countries }) => {
+  const lst = countries.map((v) => {
     return (
-      <div key={v.code} className={styles.grid}>
-        <h3>{v.code}({v.emoji})</h3>
-        <p>
-          {v.name}
-        </p>
-      </div>);
+      <Grid item key={v.code}>
+
+        <Card variant="outlined">
+          <CardContent>
+            <Typography variant="h5" component="div">
+              {v.code}({v.emoji})
+            </Typography>
+            <Typography variant="body2">{v.name}</Typography>
+          </CardContent>
+        </Card>
+      </Grid>
+    );
   });
   return (
     <div className={styles.container}>
@@ -29,7 +34,9 @@ const Home: NextPage = ({ countries }) => {
       </Head>
 
       <main className={styles.main}>
-        {lst}
+        <Grid container spacing={2} justifyContent="center">
+          {lst}
+        </Grid>
       </main>
 
       <footer className={styles.footer}>
@@ -49,21 +56,15 @@ const Home: NextPage = ({ countries }) => {
 };
 
 export async function getStaticProps() {
-  const { data } = await client.query({
-    query: gql`
-        query Countries {
-            countries {
-                code
-                name
-                emoji
-            }
-        }
-    `,
+  const apolloClient = initializeApollo();
+  const { data } = await apolloClient.query({
+    query: CountriesDocument,
   });
 
+  const countries: Country[] = data.countries.slice(0, 4);
   return {
     props: {
-      countries: data.countries.slice(0, 4),
+      countries,
     },
   };
 }

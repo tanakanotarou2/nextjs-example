@@ -1,0 +1,11 @@
+overwrite: true
+#schema: ${GRAPHQL_ENDPOINT}
+
+schema: https://countries.trevorblades.com
+documents: "src/**/*.graphql"
+generates:
+  src/__generated__/graphql.tsx:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-react-apollo"
