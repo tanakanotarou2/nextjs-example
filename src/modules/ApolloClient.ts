@@ -1,5 +1,7 @@
 import type { GetServerSidePropsContext } from 'next';
-import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+import { relayStylePagination } from '@apollo/client/utilities';
 
 export const COOKIES_TOKEN_NAME = 'jwt';
 
@@ -12,28 +14,40 @@ export const COOKIES_TOKEN_NAME = 'jwt';
 // };
 //
 
-export const createApolloClient = (ctx?: GetServerSidePropsContext | null) => {
-  // const httpLink = new HttpLink({
-  //   uri: process.env.NEXT_PUBLIC_GRAPHQL_URI,
-  //   credentials: 'same-origin',
-  // });
+const getToken =()=>{
+  return process.env.NEXT_PUBLIC_GH_TOKEN
+}
 
-  // const authLink = setContext((_, { headers }) => {
-  //   // Get the authentication token from cookies
-  //   // const token = getToken(ctx?.req);
-  //
-  //   return {
-  //     headers: {
-  //       ...headers,
-  //       authorization: token ? `Bearer ${token}` : '',
-  //     },
-  //   };
-  // });
+export const createApolloClient = (ctx?: GetServerSidePropsContext | null) => {
+  const httpLink = new HttpLink({
+    uri: process.env.NEXT_PUBLIC_GRAPHQL_URI,
+    // credentials: 'same-origin',
+  });
+
+  // @ts-ignore
+  const authLink = setContext((_, { headers }) => {
+    // Get the authentication token from cookies
+    const token = getToken();
+    return {
+      headers: {
+        ...headers,
+        authorization: token ? `bearer ${token}` : '',
+      },
+    };
+  });
+
+  const typePolicies = {
+    Query: {
+      fields: {
+        // // relayスタイルのページネーションを使用
+        // repository: relayStylePagination(),
+      },
+    },
+  };
 
   return new ApolloClient({
     ssrMode: typeof window === 'undefined',
-    uri: 'https://countries.trevorblades.com',
-    // link: authLink.concat(httpLink),
-    cache: new InMemoryCache(),
+    link: authLink.concat(httpLink),
+    cache: new InMemoryCache({typePolicies}),
   });
 };
