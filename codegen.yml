@@ -1,0 +1,16 @@
+overwrite: true
+schema:
+  - ${NEXT_PUBLIC_GRAPHQL_URI}:
+      headers:
+        Authorization: "bearer ${NEXT_PUBLIC_GH_TOKEN}"
+documents: "src/**/*.graphql"
+generates:
+  src/__generated__/graphql.tsx:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-react-apollo"
+config:
+#  enumsAsConst: true # enum を Enum にせず、const (string unions) で定義
+  namingConvention:
+    enumValues: keep

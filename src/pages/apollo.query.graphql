@@ -1,0 +1,28 @@
+query Repository {
+    repository(owner:"tanakanotarou2", name:"nextjs-example") {
+        issue(number:1) {
+            id
+            reactions(first:10) {
+                edges {
+                    node {
+                        id
+                        content
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+mutation AddReaction($content:ReactionContent!){
+    addReaction(input:{subjectId:"I_kwDOHXKvV85KE9qo", content: $content}) {
+        clientMutationId
+    }
+}
+
+mutation RemoveReaction($content:ReactionContent!){
+    removeReaction(input:{subjectId:"I_kwDOHXKvV85KE9qo",content:$content}){
+        clientMutationId
+    }
+}
