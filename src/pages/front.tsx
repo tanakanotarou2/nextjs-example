@@ -2,9 +2,8 @@ import type { NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../styles/Home.module.css';
-import { useQuery, gql, ssrExchange, dedupExchange, cacheExchange, fetchExchange } from 'urql';
+import { gql, useQuery } from 'urql';
 import { withUrql } from '../modules/urqlClient';
-import { initUrqlClient } from 'next-urql';
 
 const POKEMONS_QUERY = gql`
     query {
@@ -15,18 +14,8 @@ const POKEMONS_QUERY = gql`
     }
 `;
 
-const POKEMONS_QUERY2 = gql`
-    query {
-        pokemons(limit: 20) {
-            id
-            name
-        }
-    }
-`;
 const Home: NextPage = () => {
   const [res] = useQuery({ query: POKEMONS_QUERY });
-  const [res2] = useQuery({ query: POKEMONS_QUERY2 });
-  console.log(res2);
   let res1body;
 
   if (res.fetching) {
@@ -53,15 +42,6 @@ const Home: NextPage = () => {
           <h1>client</h1>
           {res1body}
         </div>
-        <div>
-          <h1>static</h1>
-          {/* @ts-ignore */}
-          {res2.data.pokemons.map(pokemon => (
-            <div key={pokemon.id}>
-              {pokemon.id} - {pokemon.name}
-            </div>
-          ))}
-        </div>
       </main>
 
       <footer className={styles.footer}>
@@ -79,28 +59,5 @@ const Home: NextPage = () => {
     </div>
   );
 };
-
-
-export async function getStaticProps() {
-  const ssrCache = ssrExchange({ isClient: false });
-  const client = initUrqlClient(
-    {
-      url: 'https://trygql.formidable.dev/graphql/basic-pokedex',
-      exchanges: [dedupExchange, cacheExchange, ssrCache, fetchExchange],
-    },
-    false,
-  );
-
-  // This query is used to populate the cache for the query
-  // used on this page.
-  await client!.query(POKEMONS_QUERY2).toPromise();
-
-  return {
-    props: {
-      // urqlState is a keyword here so withUrqlClient can pick it up.
-      urqlState: ssrCache.extractData(),
-    },
-  };
-}
 
 export default withUrql(Home);
