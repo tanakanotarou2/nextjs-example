@@ -36,3 +36,6 @@ yarn-error.log*
 
 .idea/
 .env
+
+# webstorm のプラグインで利用する schema
+schema.graphql

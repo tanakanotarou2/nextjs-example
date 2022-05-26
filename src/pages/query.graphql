@@ -1,0 +1,14 @@
+query Test{
+    questions{
+        edges {
+            node {
+                id
+                questionText
+                pubDate
+                __typename
+            }
+        }
+    }
+
+
+}
